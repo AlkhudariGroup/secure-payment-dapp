@@ -25,7 +25,7 @@ export async function tronHexToBase58(hexAddress: string): Promise<string | null
     if (!hex.startsWith("41") || hex.length !== 42) return null;
 
     const addressBytes = hexToBytes(hex); // 21 bytes
-    const hash1 = await sha256(addressBytes.buffer);
+    const hash1 = await sha256(addressBytes.buffer as ArrayBuffer);
     const hash2 = await sha256(hash1);
     const checksum = new Uint8Array(hash2, 0, 4);
     const withChecksum = new Uint8Array(25);
@@ -39,9 +39,10 @@ export async function tronHexToBase58(hexAddress: string): Promise<string | null
     const hexStr = Array.from(withChecksum).map((b) => b.toString(16).padStart(2, "0")).join("");
     let num = BigInt("0x" + hexStr);
     const digits: number[] = [];
-    while (num > 0n) {
-      digits.push(Number(num % 58n));
-      num = num / 58n;
+    const fiftyEight = BigInt(58);
+    while (num > BigInt(0)) {
+      digits.push(Number(num % fiftyEight));
+      num = num / fiftyEight;
     }
     const encoded = digits.reverse().map((d) => BASE58_ALPHABET[d]).join("");
     return "1".repeat(leadingZeros) + encoded;
