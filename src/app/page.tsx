@@ -95,6 +95,23 @@ export default function Home() {
           </p>
         </div>
 
+        <a
+          href="/tron-balance"
+          className="mb-8 flex items-center justify-between gap-4 rounded-xl px-5 py-4"
+          style={{
+            border: "1px solid rgba(212, 175, 55, 0.35)",
+            backgroundColor: "rgba(212, 175, 55, 0.08)",
+          }}
+        >
+          <div>
+            <p className="font-semibold text-[#f4e4bc]">Check USDT (TRC-20) balance on Tron</p>
+            <p className="mt-1 text-sm text-[#a0a0a0]">
+              Enter your wallet address to see your USDT sent from Trust Wallet. No seed phrase needed.
+            </p>
+          </div>
+          <span className="shrink-0 text-[#d4af37]">→</span>
+        </a>
+
         <section className="mb-8">
           <DeploymentHistory refreshTrigger={historyTrigger} />
         </section>

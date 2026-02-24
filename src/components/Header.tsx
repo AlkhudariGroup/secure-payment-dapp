@@ -14,15 +14,27 @@ export function Header() {
     <header className="border-b border-[rgba(212,175,55,0.2)] bg-black">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <span
-            className="text-xl font-semibold tracking-tight"
+          <a
+            href="/"
+            className="text-xl font-semibold tracking-tight hover:opacity-90"
             style={{
               color: "#f4e4bc",
               textShadow: "0 0 24px rgba(212, 175, 55, 0.4)",
             }}
           >
             DR DXB Server
-          </span>
+          </a>
+          <a
+            href="/tron-balance"
+            className="rounded-lg px-3 py-2 text-sm font-medium"
+            style={{
+              border: "1px solid rgba(212, 175, 55, 0.4)",
+              backgroundColor: "rgba(212, 175, 55, 0.1)",
+              color: "#f4e4bc",
+            }}
+          >
+            Check USDT (TRC-20) balance
+          </a>
           <span
             className="rounded px-1.5 py-0.5 text-xs font-medium"
             style={{
