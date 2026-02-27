@@ -73,9 +73,22 @@ npm run build
 npm start
 ```
 
-Static export is not required; the app is a normal Next.js app. All compilation and signing happen in the browser; the server only serves static/assets and the initial HTML/JS.
+## How to Deploy (Vercel)
 
-**Note:** The first-load JS bundle is large (~6–7 MB) because the Solidity compiler (`solc`) is bundled for in-browser compilation. This is expected and avoids any server-side compilation.
+This project is optimized for **Vercel**.
+
+1. **Import Project**:
+   - Go to [Vercel Dashboard](https://vercel.com).
+   - Click **Add New Project** → **Import Git Repository**.
+   - Select the repository: `secure-payment-dapp`.
+
+2. **Environment Variables (Optional)**:
+   - Add `NEXT_PUBLIC_APP_PASSWORD` if you want to password-protect the app.
+   - Add `NEXT_PUBLIC_ETH_RPC_URL` or `NEXT_PUBLIC_BSC_RPC_URL` for custom RPCs.
+
+3. **Deploy**:
+   - Click **Deploy**.
+   - Wait ~1 minute. Your dApp is now live on a secure HTTPS domain!
 
 ## Project structure (main parts)
 
