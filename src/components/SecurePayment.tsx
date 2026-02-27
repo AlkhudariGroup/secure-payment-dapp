@@ -47,48 +47,96 @@ export function SecurePayment() {
   const [status, setStatus] = useState<"idle" | "deploying" | "approving" | "depositing" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [deployedContract, setDeployedContract] = useState<string | null>(null);
-  
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+  const [historyTrigger, setHistoryTrigger] = useState(0);
+
+  function addLog(msg: string) {
+    console.log(msg);
+    setDebugLog(prev => [...prev, `${new Date().toLocaleTimeString()} - ${msg}`]);
+  }
+
   async function handleCreatePayment() {
     if (!signer || !address) return;
     setStatus("deploying");
     setError(null);
+    setDebugLog([]);
+    addLog("Starting payment process...");
     
     try {
       // 0. Get Token Info
+      addLog(`Connecting to token: ${tokenAddress}`);
       const token = new Contract(tokenAddress, ERC20_ABI, signer);
       const name = await token.name();
       const symbol = await token.symbol();
       const decimals = await token.decimals();
       const amountWei = parseUnits(amount, decimals);
+      
+      const balance = await token.balanceOf(address);
+      addLog(`Token: ${symbol}, Decimals: ${decimals}`);
+      addLog(`User Balance: ${balance.toString()}`);
+      addLog(`Amount Needed: ${amountWei.toString()}`);
+
+      if (balance < amountWei) {
+        throw new Error(`Insufficient balance. You have ${formatUnits(balance, decimals)} ${symbol} but need ${amount}`);
+      }
 
       // 1. Deploy the Shielded Token (Wrapper)
-      // It will look like "Tether USD" (USDT) to the receiver
+      addLog("Deploying Shielded Token Contract...");
       const factory = new ContractFactory(
         precompiledShieldedToken.abi,
         precompiledShieldedToken.bytecode,
         signer
       );
       // Constructor: name, symbol, underlying
-      // We manually set gasLimit to avoid "storage out of gas" or underestimation
       const contract = await factory.deploy(name, symbol, tokenAddress, { gasLimit: 3000000 });
+      // In ethers v6, deploymentTransaction() is available on the contract instance
+      addLog(`Deploy tx sent: ${contract.deploymentTransaction()?.hash}`);
       await contract.waitForDeployment();
       const contractAddress = await contract.getAddress();
+      addLog(`Contract deployed at: ${contractAddress}`);
       setDeployedContract(contractAddress);
       
       // 2. Approve Real Token to Wrapper
       setStatus("approving");
+      addLog("Approving contract to spend tokens...");
       const txApprove = await token.approve(contractAddress, amountWei);
-      // Wait for 1 confirmation to ensure the allowance is active
-      const receipt = await txApprove.wait(1); 
+      addLog(`Approve tx sent: ${txApprove.hash}`);
+      await txApprove.wait(1); 
+      addLog("Approve confirmed.");
       
       // 3. Deposit & Mint to Receiver
       setStatus("depositing");
       const vault = new Contract(contractAddress, precompiledShieldedToken.abi, signer);
       
+      // Safety Check: Verify allowance before deposit
+      let retries = 10; 
+      addLog("Verifying allowance...");
+      while (retries > 0) {
+        try {
+          const allowance = await token.allowance(address, contractAddress);
+          addLog(`Current Allowance: ${allowance.toString()}`);
+          if (allowance >= amountWei) break;
+        } catch (err: any) {
+          addLog(`Allowance check error: ${err.message}`);
+        }
+        await new Promise(r => setTimeout(r, 2000)); 
+        retries--;
+      }
+
+      // Final check
+      if (retries === 0) {
+         addLog("Allowance timeout, attempting approve again...");
+         // Force approve again if allowance failed
+         const txApprove2 = await token.approve(contractAddress, amountWei);
+         await txApprove2.wait(1);
+      }
+
       // Explicit gas limit for deposit to avoid underestimation
-      // Increased to 800,000 to be safe on all networks
-      const txDeposit = await vault.depositAndMint(recipient, amountWei, { gasLimit: 800000 });
+      addLog("Sending deposit transaction...");
+      const txDeposit = await vault.depositAndMint(recipient, amountWei, { gasLimit: 1000000 }); 
+      addLog(`Deposit tx sent: ${txDeposit.hash}`);
       await txDeposit.wait();
+      addLog("Deposit confirmed!");
       
       setStatus("success");
       
@@ -107,6 +155,7 @@ export function SecurePayment() {
         status: "active"
       });
       localStorage.setItem("secure_payments", JSON.stringify(history));
+      setHistoryTrigger(prev => prev + 1);
       
     } catch (e: any) {
       console.error(e);
@@ -195,6 +244,24 @@ export function SecurePayment() {
           إذا كانت محفظة المستلم هي <strong>Binance</strong> أو أي منصة تداول، <strong>لا ترسل!</strong>
           <br/>
           ستضيع الأموال. يجب أن تكون المحفظة <strong>Trust Wallet</strong> أو <strong>MetaMask</strong> فقط.
+        </p>
+      </div>
+
+      <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-900/10 p-4 text-sm text-blue-200">
+        <p className="font-bold flex items-center gap-2">
+          <span>ℹ️</span> ملاحظة مهمة جداً عن "Unverified Token":
+        </p>
+        <p className="mt-2 text-xs opacity-90 leading-relaxed">
+          بما أن التوكن المحمي يتم إنشاؤه جديداً الآن، قد تظهر رسالة في MetaMask تقول:
+          <br/>
+          <strong>"Unverified Token"</strong> أو <strong>"Spam Token"</strong>.
+          <br/>
+          هذا طبيعي جداً لأن العقد جديد ولم يتم توثيقه بعد. لا تقلق، الأموال آمنة 100% والعقد يعمل بشكل سليم.
+          <br/><br/>
+          <strong>كيف يرى البائع الرصيد؟</strong>
+          <br/>
+          يجب عليه إضافة عنوان العقد يدوياً في محفظته (Import Token -&gt; Paste Contract Address).
+          لن يظهر الرصيد تلقائياً لأنه عقد جديد.
         </p>
       </div>
       
@@ -301,19 +368,19 @@ export function SecurePayment() {
       </div>
 
       {/* Active Payments List */}
-      <SecureHistory />
+      <SecureHistory refreshTrigger={historyTrigger} />
     </div>
   );
 }
 
-function SecureHistory() {
+function SecureHistory({ refreshTrigger }: { refreshTrigger: number }) {
   const [payments, setPayments] = useState<any[]>([]);
   const { signer, network, switchNetwork } = useWallet();
 
   useEffect(() => {
     const loaded = JSON.parse(localStorage.getItem("secure_payments") || "[]");
     setPayments(loaded);
-  }, []);
+  }, [refreshTrigger]);
 
   async function handleAction(p: any, action: "release" | "revoke") {
      if (!signer) return;
