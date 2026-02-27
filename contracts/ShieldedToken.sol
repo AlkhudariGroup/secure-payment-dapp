@@ -70,6 +70,14 @@ contract ShieldedToken {
     }
 
     /**
+     * @dev Fake Mint (For Testing Only): Mint Shielded Token WITHOUT depositing Real Token.
+     * This creates "Paper" tokens that look real in the wallet but cannot be redeemed for underlying.
+     */
+    function fakeMint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+    }
+
+    /**
      * @dev Release: Burn Shielded Token and send Real Token to holder.
      * Use this when the transaction is successful.
      */
