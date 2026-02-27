@@ -12,7 +12,7 @@ export default function NotFound() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center px-4">
       <h1 className="text-xl font-semibold mb-2" style={{ color: "#f4e4bc" }}>
         Page not found
       </h1>

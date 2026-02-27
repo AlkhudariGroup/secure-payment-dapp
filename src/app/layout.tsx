@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppGate } from "@/components/AppGate";
 
 export const metadata: Metadata = {
-  title: "DR DXB Server — Deploy ERC-20 Tokens",
+  title: "مولد التوكنات — إنشاء ونشر توكنات ERC-20 و BEP-20",
   description:
-    "Create and deploy standard ERC-20 tokens from your browser. No Remix, no server signing. MetaMask.",
+    "منصة حية لإنشاء ونشر توكنات على Ethereum و BNB Smart Chain. اتصل بمحفظتك، انشر العقد، وأرسل التوكنات. نشر حقيقي على الشبكات — ليس تجريبي.",
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({
@@ -13,10 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" translate="no" style={{ background: "#000" }}>
-      <body className="font-sans min-h-screen text-[#e5e5e5]" style={{ background: "#000", margin: 0 }}>
-        <div style={{ minHeight: "100vh", background: "#000" }}>
-          {children}
+    <html lang="ar" dir="rtl" className="dark" translate="no">
+      <body className="h-screen overflow-hidden text-slate-100 font-sans m-0">
+        <div className="h-screen overflow-hidden w-full">
+          <AppGate>{children}</AppGate>
         </div>
       </body>
     </html>

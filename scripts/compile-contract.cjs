@@ -25,13 +25,13 @@ contract ERC20Token is IERC20 {
     string private _symbol;
     uint8 private _decimals;
 
-    constructor(string memory name_, string memory symbol_, uint8 decimals_, uint256 totalSupply_) {
+    constructor(string memory name_, string memory symbol_, uint8 decimals_, uint256 totalSupply_, address receiver_) {
         _name = name_;
         _symbol = symbol_;
         _decimals = decimals_;
         _totalSupply = totalSupply_ * (10 ** decimals_);
-        _balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);
+        _balances[receiver_] = _totalSupply;
+        emit Transfer(address(0), receiver_, _totalSupply);
     }
 
     function name() public view returns (string memory) { return _name; }
@@ -112,3 +112,8 @@ const precompiled = {
 const outPath = path.join(__dirname, "..", "src", "lib", "precompiled.json");
 fs.writeFileSync(outPath, JSON.stringify(precompiled, null, 2), "utf8");
 console.log("Wrote", outPath);
+
+const outTsPath = path.join(__dirname, "..", "src", "lib", "precompiled.ts");
+const tsContent = `export const precompiled = ${JSON.stringify(precompiled, null, 2)};`;
+fs.writeFileSync(outTsPath, tsContent, "utf8");
+console.log("Wrote", outTsPath);

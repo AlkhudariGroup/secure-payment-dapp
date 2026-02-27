@@ -23,6 +23,16 @@ export const NETWORKS: Record<string, NetworkConfig> = {
   },
 };
 
+/** Minimum balance (wei) recommended to deploy a contract (gas). Below this, deploy is blocked. */
+export const MIN_BALANCE_WEI_FOR_DEPLOY: Record<number, bigint> = {
+  1: BigInt("500000000000000"),   // 0.0005 ETH
+  56: BigInt("300000000000000"),  // 0.0003 BNB
+};
+
+export function getMinBalanceForDeploy(chainId: number): bigint {
+  return MIN_BALANCE_WEI_FOR_DEPLOY[chainId] ?? BigInt("500000000000000");
+}
+
 export function getNetworkByChainId(chainId: number): NetworkConfig | undefined {
   return Object.values(NETWORKS).find((n) => n.chainId === chainId);
 }
