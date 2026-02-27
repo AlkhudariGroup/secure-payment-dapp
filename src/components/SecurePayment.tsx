@@ -195,116 +195,27 @@ export function SecurePayment() {
         <span className="text-gold text-sm">ملاحظة: المستلم سيرى الرصيد في محفظته، لكن لا يمكنه التصرف فيه حتى تقوم أنت بـ "التسليم".</span>
       </p>
 
-      <div className="mb-6 rounded-xl border border-white/10 bg-black/40 p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <span>🧪</span> هل تريد التجربة بدون مخاطرة؟ (Test Mode)
-        </h3>
-        <p className="text-xs text-slate-300 mb-2 leading-relaxed">
-          يمكنك اختبار النظام بالكامل (إرسال، تسليم، استرداد) باستخدام <strong>أموال وهمية (Testnet)</strong> قبل وضع دولار واحد حقيقي.
-        </p>
-        <div className="flex items-center gap-2 mb-3">
-          <button 
-             onClick={() => setIsFakeMode(!isFakeMode)}
-             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isFakeMode ? "bg-red-500 text-white animate-pulse" : "bg-white/10 text-slate-400"}`}
-          >
-             {isFakeMode ? "🔴 Fake Mode ON (Simulating)" : "⚪️ Fake Mode OFF"}
-          </button>
-          {isFakeMode && <span className="text-[10px] text-red-300">لن يتم خصم أموال حقيقية. المحاكاة فقط لاختبار الواجهة.</span>}
-        </div>
-        <ol className="text-xs text-slate-400 list-decimal list-inside space-y-1 bg-white/5 p-3 rounded-lg border border-white/5">
-          <li>حوّل محفظتك (MetaMask) إلى شبكة <strong>Sepolia</strong> أو <strong>BSC Testnet</strong>.</li>
-          <li>احصل على عملات وهمية مجانية من "Faucets" (ابحث عن Sepolia Faucet).</li>
-          <li>استخدم عناوين التوكنات الوهمية التي ستظهر لك في الأزرار أدناه (مثل Fake USDC).</li>
-          <li>جرب العملية كاملة: أنشئ دفعة، ثم جرب استردادها (Refund).</li>
-          <li>إذا اطمأن قلبتك، عد للشبكة الحقيقية (Mainnet) واستخدم أموالك الحقيقية.</li>
-        </ol>
-      </div>
-
-      <div className="mb-6 rounded-xl border border-white/10 bg-black/40 p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <span>📋</span> قائمة المحافظ المدعومة والمحظورة
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          {/* Allowed Wallets */}
-          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3">
-            <p className="font-bold text-emerald-400 mb-2 flex items-center gap-1">
-              <span>✅</span> مسموح (Safe to Send):
-            </p>
-            <ul className="space-y-1.5 text-slate-300 list-disc list-inside opacity-90">
-              <li>Trust Wallet</li>
-              <li>MetaMask</li>
-              <li>Coinbase Wallet (DeFi App)</li>
-              <li>Phantom Wallet</li>
-              <li>Exodus Wallet</li>
-              <li>Ledger / Trezor (Cold Wallets)</li>
-              <li>SafePal</li>
-              <li>1inch Wallet</li>
-              <li>أي محفظة تملك أنت مفتاحها الخاص (Non-Custodial)</li>
-            </ul>
-          </div>
-
-          {/* Blocked Wallets */}
-          <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3">
-            <p className="font-bold text-red-400 mb-2 flex items-center gap-1">
-              <span>⛔️</span> ممنوع (DO NOT SEND):
-            </p>
-            <ul className="space-y-1.5 text-slate-300 list-disc list-inside opacity-90">
-              <li>Binance (Exchange)</li>
-              <li>Coinbase (Exchange Account)</li>
-              <li>OKX (Exchange)</li>
-              <li>Bybit / KuCoin</li>
-              <li>Kraken</li>
-              <li>Bitget</li>
-              <li>Rain / BitOasis</li>
-              <li>أي منصة تداول مركزية (CEX)</li>
-            </ul>
-            <p className="mt-2 text-[10px] text-red-300 font-medium bg-red-500/10 p-1.5 rounded">
-              ⚠️ الإرسال للمنصات يؤدي لضياع الأموال لأنهم لا يدعمون العقد المخصص.
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mb-6 rounded-xl border border-red-500/30 bg-red-900/10 p-4 text-sm text-red-200 animate-pulse">
+      <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-900/10 p-4 text-sm text-emerald-200">
         <p className="font-bold flex items-center gap-2">
-          <span>🚨</span> تذكير أخير: هل المستلم يستخدم Binance؟
+          <span>🛡️</span> نظام الدفع المحمي (Secure Shielded Payment)
         </p>
         <p className="mt-2 text-xs opacity-90 leading-relaxed">
-          إذا كانت محفظة المستلم هي <strong>Binance</strong> أو أي منصة تداول، <strong>لا ترسل!</strong>
+          هذا النظام يضمن حق الطرفين:
           <br/>
-          ستضيع الأموال. يجب أن تكون المحفظة <strong>Trust Wallet</strong> أو <strong>MetaMask</strong> فقط.
-        </p>
-      </div>
-
-      <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-900/10 p-4 text-sm text-blue-200">
-        <p className="font-bold flex items-center gap-2">
-          <span>ℹ️</span> ملاحظة مهمة جداً عن "Unverified Token":
-        </p>
-        <p className="mt-2 text-xs opacity-90 leading-relaxed">
-          بما أن التوكن المحمي يتم إنشاؤه جديداً الآن، قد تظهر رسالة في MetaMask تقول:
+          1. <strong>المرسل (أنت):</strong> تحتفظ بصلاحية استرداد الأموال (Refund) في أي وقت قبل التسليم.
           <br/>
-          <strong>"Unverified Token"</strong> أو <strong>"Spam Token"</strong>.
-          <br/>
-          هذا طبيعي جداً لأن العقد جديد ولم يتم توثيقه بعد. لا تقلق، الأموال آمنة 100% والعقد يعمل بشكل سليم.
-          <br/><br/>
-          <strong>كيف يرى البائع الرصيد؟</strong>
-          <br/>
-          يجب عليه إضافة عنوان العقد يدوياً في محفظته (Import Token -&gt; Paste Contract Address).
-          لن يظهر الرصيد تلقائياً لأنه عقد جديد.
+          2. <strong>المستلم:</strong> يرى الرصيد في محفظته فوراً (كمعاملة حقيقية)، لكنه لا يستطيع سحبه حتى تضغط أنت "تسليم".
         </p>
       </div>
 
       <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-900/10 p-4 text-sm text-amber-200">
          <p className="font-bold flex items-center gap-2">
-            <span>🔎</span> تأكد من الشبكة والعقد (Check Network):
+            <span>🔎</span> تأكد من الشبكة (Check Network):
          </p>
          <p className="mt-2 text-xs opacity-90 leading-relaxed">
-            أنت متصل الآن بشبكة: <strong className="text-white">{network?.name || "غير متصل"}</strong> (Chain ID: {network?.chainId})
+            أنت متصل بشبكة: <strong className="text-white">{network?.name || "..."}</strong>
             <br/>
-            تأكد أنك تملك رصيد {COMMON_TOKENS.find(t => t.address === tokenAddress)?.symbol || "العملة"} على <strong>هذه الشبكة بالتحديد</strong>.
-            <br/>
-            رصيدك الحالي: <span className="text-white font-mono">{error && error.includes("رصيدك") ? "0.0 (تحقق من المحفظة)" : "..."}</span>
+            تأكد من وجود رصيد كافٍ من العملة المختارة لدفع قيمة المعاملة + رسوم الغاز (Gas).
          </p>
       </div>
       
