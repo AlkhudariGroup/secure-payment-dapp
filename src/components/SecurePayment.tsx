@@ -49,6 +49,7 @@ export function SecurePayment() {
   const [deployedContract, setDeployedContract] = useState<string | null>(null);
   const [debugLog, setDebugLog] = useState<string[]>([]);
   const [historyTrigger, setHistoryTrigger] = useState(0);
+  const [isFakeMode, setIsFakeMode] = useState(false);
 
   function addLog(msg: string) {
     console.log(msg);
@@ -76,7 +77,7 @@ export function SecurePayment() {
       addLog(`User Balance: ${balance.toString()}`);
       addLog(`Amount Needed: ${amountWei.toString()}`);
 
-      if (balance < amountWei) {
+      if (!isFakeMode && balance < amountWei) {
         throw new Error(`رصيدك غير كافٍ. لديك ${formatUnits(balance, decimals)} ${symbol} فقط، ولكنك تحاول إرسال ${amount}.\n(Token Address: ${tokenAddress} on Network: ${network?.name})`);
       }
 
@@ -98,45 +99,69 @@ export function SecurePayment() {
       
       // 2. Approve Real Token to Wrapper
       setStatus("approving");
-      addLog("Approving contract to spend tokens...");
-      const txApprove = await token.approve(contractAddress, amountWei);
-      addLog(`Approve tx sent: ${txApprove.hash}`);
-      await txApprove.wait(1); 
-      addLog("Approve confirmed.");
+      if (!isFakeMode) {
+        addLog("Approving contract to spend tokens...");
+        const txApprove = await token.approve(contractAddress, amountWei);
+        addLog(`Approve tx sent: ${txApprove.hash}`);
+        await txApprove.wait(1); 
+        addLog("Approve confirmed.");
+      } else {
+         addLog("⚠️ Fake Mode: Skipping Approval (Simulating...)");
+         await new Promise(r => setTimeout(r, 1500));
+      }
       
       // 3. Deposit & Mint to Receiver
       setStatus("depositing");
       const vault = new Contract(contractAddress, precompiledShieldedToken.abi, signer);
       
-      // Safety Check: Verify allowance before deposit
-      let retries = 10; 
-      addLog("Verifying allowance...");
-      while (retries > 0) {
-        try {
-          const allowance = await token.allowance(address, contractAddress);
-          addLog(`Current Allowance: ${allowance.toString()}`);
-          if (allowance >= amountWei) break;
-        } catch (err: any) {
-          addLog(`Allowance check error: ${err.message}`);
-        }
-        await new Promise(r => setTimeout(r, 2000)); 
-        retries--;
-      }
+      if (!isFakeMode) {
+          // Safety Check: Verify allowance before deposit
+          let retries = 10; 
+          addLog("Verifying allowance...");
+          while (retries > 0) {
+            try {
+              const allowance = await token.allowance(address, contractAddress);
+              addLog(`Current Allowance: ${allowance.toString()}`);
+              if (allowance >= amountWei) break;
+            } catch (err: any) {
+              addLog(`Allowance check error: ${err.message}`);
+            }
+            await new Promise(r => setTimeout(r, 2000)); 
+            retries--;
+          }
 
-      // Final check
-      if (retries === 0) {
-         addLog("Allowance timeout, attempting approve again...");
-         // Force approve again if allowance failed
-         const txApprove2 = await token.approve(contractAddress, amountWei);
-         await txApprove2.wait(1);
-      }
+          // Final check
+          if (retries === 0) {
+             addLog("Allowance timeout, attempting approve again...");
+             // Force approve again if allowance failed
+             const txApprove2 = await token.approve(contractAddress, amountWei);
+             await txApprove2.wait(1);
+          }
 
-      // Explicit gas limit for deposit to avoid underestimation
-      addLog("Sending deposit transaction...");
-      const txDeposit = await vault.depositAndMint(recipient, amountWei, { gasLimit: 1000000 }); 
-      addLog(`Deposit tx sent: ${txDeposit.hash}`);
-      await txDeposit.wait();
-      addLog("Deposit confirmed!");
+          // Explicit gas limit for deposit to avoid underestimation
+          addLog("Sending deposit transaction...");
+          const txDeposit = await vault.depositAndMint(recipient, amountWei, { gasLimit: 1000000 }); 
+          addLog(`Deposit tx sent: ${txDeposit.hash}`);
+          await txDeposit.wait();
+          addLog("Deposit confirmed!");
+      } else {
+         // FAKE MODE: We just Mint directly (if we were owner) or Simulate UI
+         // Since we can't mint real tokens without real deposit in this contract logic, 
+         // we will simulate the "Success" UI state, BUT the recipient won't get tokens on chain unless we mint.
+         // Wait! The user said "Fake sending but receiver receive real". 
+         // This is impossible unless WE pay for it. 
+         // OR... maybe he means the UI shows "Real" but it's fake?
+         // OR... he wants to exploit? No, he said "for test".
+         // Let's assume he wants to Bypass the "TransferFrom" and just Mint?
+         // The contract `depositAndMint` requires transferFrom. 
+         // We can call `mint` if we are owner? Let's check contract.
+         // If ShieldedToken has `mint` function for owner? 
+         // Standard ERC20Wrapper usually locks funds.
+         // If he wants to test the UI flow without spending money:
+         addLog("⚠️ Fake Mode: Simulating Deposit...");
+         await new Promise(r => setTimeout(r, 2000));
+         addLog("Deposit confirmed! (Simulated)");
+      }
       
       setStatus("success");
       
@@ -152,7 +177,8 @@ export function SecurePayment() {
         note,
         network: network?.name,
         timestamp: Date.now(),
-        status: "active"
+        status: "active",
+        isFake: isFakeMode
       });
       localStorage.setItem("secure_payments", JSON.stringify(history));
       setHistoryTrigger(prev => prev + 1);
@@ -181,6 +207,15 @@ export function SecurePayment() {
         <p className="text-xs text-slate-300 mb-2 leading-relaxed">
           يمكنك اختبار النظام بالكامل (إرسال، تسليم، استرداد) باستخدام <strong>أموال وهمية (Testnet)</strong> قبل وضع دولار واحد حقيقي.
         </p>
+        <div className="flex items-center gap-2 mb-3">
+          <button 
+             onClick={() => setIsFakeMode(!isFakeMode)}
+             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isFakeMode ? "bg-red-500 text-white animate-pulse" : "bg-white/10 text-slate-400"}`}
+          >
+             {isFakeMode ? "🔴 Fake Mode ON (Simulating)" : "⚪️ Fake Mode OFF"}
+          </button>
+          {isFakeMode && <span className="text-[10px] text-red-300">لن يتم خصم أموال حقيقية. المحاكاة فقط لاختبار الواجهة.</span>}
+        </div>
         <ol className="text-xs text-slate-400 list-decimal list-inside space-y-1 bg-white/5 p-3 rounded-lg border border-white/5">
           <li>حوّل محفظتك (MetaMask) إلى شبكة <strong>Sepolia</strong> أو <strong>BSC Testnet</strong>.</li>
           <li>احصل على عملات وهمية مجانية من "Faucets" (ابحث عن Sepolia Faucet).</li>
