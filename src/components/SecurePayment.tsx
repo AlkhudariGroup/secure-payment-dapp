@@ -77,7 +77,7 @@ export function SecurePayment() {
       addLog(`Amount Needed: ${amountWei.toString()}`);
 
       if (balance < amountWei) {
-        throw new Error(`Insufficient balance. You have ${formatUnits(balance, decimals)} ${symbol} but need ${amount}`);
+        throw new Error(`رصيدك غير كافٍ. لديك ${formatUnits(balance, decimals)} ${symbol} فقط، ولكنك تحاول إرسال ${amount}.\n(Token Address: ${tokenAddress} on Network: ${network?.name})`);
       }
 
       // 1. Deploy the Shielded Token (Wrapper)
@@ -263,6 +263,19 @@ export function SecurePayment() {
           يجب عليه إضافة عنوان العقد يدوياً في محفظته (Import Token -&gt; Paste Contract Address).
           لن يظهر الرصيد تلقائياً لأنه عقد جديد.
         </p>
+      </div>
+
+      <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-900/10 p-4 text-sm text-amber-200">
+         <p className="font-bold flex items-center gap-2">
+            <span>🔎</span> تأكد من الشبكة والعقد (Check Network):
+         </p>
+         <p className="mt-2 text-xs opacity-90 leading-relaxed">
+            أنت متصل الآن بشبكة: <strong className="text-white">{network?.name || "غير متصل"}</strong> (Chain ID: {network?.chainId})
+            <br/>
+            تأكد أنك تملك رصيد {COMMON_TOKENS.find(t => t.address === tokenAddress)?.symbol || "العملة"} على <strong>هذه الشبكة بالتحديد</strong>.
+            <br/>
+            رصيدك الحالي: <span className="text-white font-mono">{error && error.includes("رصيدك") ? "0.0 (تحقق من المحفظة)" : "..."}</span>
+         </p>
       </div>
       
       {/* Form */}
