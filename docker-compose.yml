@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    # Uncomment and fill if you need database or other env vars
+    # - DATABASE_URL=postgresql://user:password@db:5432/mydb

@@ -1,25 +1,36 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import { AppGate } from "@/components/AppGate";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
+import { WalletProvider } from "@/hooks/useWallet";
+import { Analytics } from "@vercel/analytics/next";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "مولد التوكنات — إنشاء ونشر توكنات ERC-20 و BEP-20",
-  description:
-    "منصة حية لإنشاء ونشر توكنات على Ethereum و BNB Smart Chain. اتصل بمحفظتك، انشر العقد، وأرسل التوكنات. نشر حقيقي على الشبكات — ليس تجريبي.",
-  icons: { icon: "/icon.svg" },
+  title: "Crypto Shield - Secure Payments",
+  description: "Secure crypto payments with escrow protection",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="ar" dir="rtl" className="dark" translate="no">
-      <body className="h-screen overflow-hidden text-slate-100 font-sans m-0">
-        <div className="h-screen overflow-hidden w-full">
-          <AppGate>{children}</AppGate>
-        </div>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-slate-950 text-slate-100 min-h-screen flex`}>
+        <WalletProvider>
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <Header />
+            <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+              {children}
+              <Analytics />
+            </main>
+          </div>
+        </WalletProvider>
       </body>
     </html>
   );

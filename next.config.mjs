@@ -25,9 +25,10 @@ const nextConfig = {
       path: false,
       crypto: false,
     };
-    config.output = { ...config.output, globalObject: "self" };
+    //config.output = { ...config.output, globalObject: "self" }; // This line causes issues with standalone output
     return config;
   },
+  output: "standalone", // Required for Docker deployment
 };
 
 export default nextConfig;
